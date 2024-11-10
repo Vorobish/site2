@@ -1,0 +1,56 @@
+h1 {
+    text-align: center;
+    color: #FFFFFF;
+}
+
+p {
+    text-align: left;
+    color: #FFC0CB;
+}
+
+a {
+    text-align: left;
+    color: #FFC0CB;
+}
+
+html {
+  background-image: url(fon1.jpg);
+  background-repeat: no-repeat;
+  background-position: center center;
+  background-attachment: fixed;
+  -webkit-background-size: cover;
+  -moz-background-size: cover;
+  -o-background-size: cover;
+  background-size: cover;
+}
+
+form {
+    text-align: left;
+    color: #FFC0CB;
+}
+
+body {
+    text-align: left;
+    color: #FFC0CB;
+}
+
+div {
+    text-align: left;
+    color: #00FF00;
+}
+
+ul {
+    text-align: left;
+    color: #FFFFFF;
+}
+
+#main{
+        width: 1200px;
+        overflow: hidden;
+    }
+#main>div{
+        width: 350px;
+        height: 550px;
+        display: inline-block;
+        float:left;
+    }
