@@ -16,7 +16,6 @@ class Menu(Base):
     image = Column(String)
     time_create = Column(DateTime)
     time_update = Column(DateTime)
-    slug = Column(String, unique=True, index=True)
     category = relationship("Category", back_populates="menus")
 
 

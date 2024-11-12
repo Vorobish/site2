@@ -15,7 +15,6 @@ class User(Base):
     disabled = Column(Boolean, default=False)
     time_create = Column(DateTime)
     time_update = Column(DateTime)
-    slug = Column(String, unique=True, index=True)
 
 
 from sqlalchemy.schema import CreateTable

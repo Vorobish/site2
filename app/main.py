@@ -9,44 +9,16 @@ from pydantic import BaseModel
 from sqlalchemy import select, insert, update, delete
 from sqlalchemy.orm import Session
 
-from app.backend import db
+
 from app.backend.dp_depends import get_db
 from app.models.user import User
 from app.routers import user, menu, category
+from app.routers.user import fake_hash_password, users_dict
 from app.schemas import UserAuth
-
-
-async def all_users(db: Annotated[Session, Depends(get_db)]):
-    users = db.scalars(select(User)).all()
-    return users
-
-fake_users_db = all_users
-
-# fake_users_db = {
-#     "johndoe": {
-#         "username": "johndoe",
-#         "full_name": "John Doe",
-#         "email": "johndoe@example.com",
-#         "hashed_password": "fakehashedsecret",
-#         "disabled": False,
-#     },
-#     "alice": {
-#         "username": "alice",
-#         "full_name": "Alice Wonderson",
-#         "email": "alice@example.com",
-#         "hashed_password": "fakehashedsecret2",
-#         "disabled": True,
-#     },
-# }
 
 app = FastAPI()
 app.mount("/static", StaticFiles(directory="app/static"), name="static")
 templates = Jinja2Templates(directory="app/templates")
-
-
-def fake_hash_password(password: str):
-    return "fakehashed" + password
-
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 
@@ -64,7 +36,8 @@ def get_user(db, username: str):
 def fake_decode_token(token):
     # This doesn't provide any security at all
     # Check the next version
-    user = get_user(fake_users_db, token)
+    # user = get_user(fake_users_db, token)
+    user = get_user(users_dict, token)
     return user
 
 
@@ -80,7 +53,7 @@ async def get_current_user(token: Annotated[str, Depends(oauth2_scheme)]):
 
 
 async def get_current_active_user(
-        current_user: Annotated[UserAuth, Depends(get_current_user)],
+        current_user: Annotated[User, Depends(get_current_user)],
 ):
     if current_user.disabled:
         raise HTTPException(status_code=400, detail="Inactive user")
@@ -89,7 +62,10 @@ async def get_current_active_user(
 
 @app.post("/token")
 async def login(form_data: Annotated[OAuth2PasswordRequestForm, Depends()]):
-    user_dict = fake_users_db.get(form_data.username)
+    # user_dict = fake_users_db.get(form_data.username)
+    for i in users_dict:
+        if i == form_data.username:
+            user_dict = users_dict[i]
     if not user_dict:
         raise HTTPException(status_code=400, detail="Incorrect username or password")
     user = UserInDB(**user_dict)
@@ -101,7 +77,7 @@ async def login(form_data: Annotated[OAuth2PasswordRequestForm, Depends()]):
 
 @app.get("/users/me")
 async def read_users_me(
-        current_user: Annotated[UserAuth, Depends(get_current_active_user)],
+        current_user: Annotated[User, Depends(get_current_active_user)],
 ):
     return current_user
 
@@ -110,16 +86,22 @@ async def read_users_me(
 async def base(request: Request) -> HTMLResponse:
     title = 'Главная страница'
     content = 'Для выбора товаров перейдите в Меню'
+    user_base = read_users_me(Annotated[User, Depends(get_current_active_user)])
+    username = 'гость'
+    for i in users_dict:
+        if i == user_base:
+            username = user_base.username
     context = {
         'request': request,
         'title': title,
         'content': content,
+        'user': username,
     }
     return templates.TemplateResponse("base.html", context)
 
 
-# @app.get('/menu')
-# async def menu(request: Request) -> HTMLResponse:
+# @app.get('/menu2')
+# async def menu2(request: Request) -> HTMLResponse:
 #     title = 'Меню'
 #     # menus = Menu.objects.all().order_by('id')
 #     context = {

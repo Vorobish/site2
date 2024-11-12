@@ -11,7 +11,6 @@ class Category(Base):
     name_category = Column(String)
     time_create = Column(DateTime)
     time_update = Column(DateTime)
-    slug = Column(String, unique=True, index=True)
 
     menus = relationship("Menu", back_populates="category")
 

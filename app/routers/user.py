@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import Annotated
+from typing import Annotated, List
 
 from fastapi import APIRouter, Depends, HTTPException, status
 from slugify import slugify
@@ -20,20 +20,25 @@ router = APIRouter(prefix="/user", tags=["user"])
 # async def welcome() -> dict:
 #     return {"message": "Hi"}
 
+# result = []
+
+users_dict = {}
+
 
 @router.get("/")
 async def all_users(db: Annotated[Session, Depends(get_db)]):
+    global users_dict
     users = db.scalars(select(User)).all()
-    # username = "johndoe"
-    # db.execute(insert(User).values(username=username,
-    #                                full_name="John Doe",
-    #                                email="johndoe@example.com",
-    #                                hashed_password="fakehashedsecret",
-    #                                disabled=False,
-    #                                time_create=datetime.now(),
-    #                                time_update=datetime.now(),
-    #                                slug=slugify(username)))
-    db.commit()
+    for i in users:
+        users_dict.update({
+                i.username: {
+                    "username": i.username,
+                    "full_name": i.full_name,
+                    "email": i.email,
+                    "hashed_password": i.hashed_password,
+                    "disabled": i.disabled,
+                }
+            })
     return users
 
 # @router.get("/user_id")
@@ -50,21 +55,21 @@ async def all_users(db: Annotated[Session, Depends(get_db)]):
 
 @router.post("/create")
 async def create_user(db: Annotated[Session, Depends(get_db)], create_user: CreateUser):
-    # user_exists = db.scalar(select(User).where(User.username == create_user.username))
-    # if user_exists:
-    #         raise HTTPException(
-    #             status_code=status.HTTP_404_NOT_FOUND,
-    #             detail='Пользователь с таким логином уже существует'
-    #         )
-    print(create_user.username, create_user.email, create_user.password, create_user.disabled)
-    hashed_password = fake_hash_password2(create_user.password)
-    print(create_user.username, create_user.email, hashed_password, create_user.disabled)
-    print()
+    user_exists = db.scalar(select(User).where(User.username == create_user.username))
+    # result = [r.id for r in db.query(User.id)]
+    # print(result)
+    if user_exists:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail='Пользователь с таким логином уже существует'
+            )
+    hashed_password = fake_hash_password(create_user.password)
     db.execute(insert(User).values(username=create_user.username,
                                    email=create_user.email,
                                    hashed_password=hashed_password,
                                    disabled=create_user.disabled,
-                                   slug=slugify(create_user.username)))
+                                   time_create=datetime.now(),
+                                   time_update=datetime.now()))
     db.commit()
     return {
         'status_code': status.HTTP_201_CREATED,
@@ -72,7 +77,7 @@ async def create_user(db: Annotated[Session, Depends(get_db)], create_user: Crea
     }
 
 
-def fake_hash_password2(password: str):
+def fake_hash_password(password: str):
     return "fakehashed" + password
 
 # pip install python-slugify
