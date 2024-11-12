@@ -8,8 +8,13 @@
 
 {% block content %}
 <div id="main">
-    main
-    <div> div v main
+    {% for menu in menus %}
+    <div>меню
+        <h2>{{ menu.name_food }}</h2>
+        <p>Вес: {{ menu.weight_gr }}, Цена: {{ menu.price }}</p>
+        <img src="static/{{ menu.image }}" style="width: 250px; height: 250px;">
+        <p style="width: 250px">Состав: {{ menu.ingredients }}</p>
     </div>
+    {% endfor %}
 </div>
 {% endblock %}

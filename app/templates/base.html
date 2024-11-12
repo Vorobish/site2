@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <title>{% block title %}{{ title }}{% endblock %}</title>
     <link href="{{ url_for('static', path='/style1.css') }}" rel="stylesheet">
-
 </head>
 <body>
     <header>
@@ -17,7 +16,7 @@
     <a href='http://127.0.0.1:8000/base/'>
         <button type="button">Главная старица</button>
     </a>
-    <a href='http://127.0.0.1:8000/menu2/'>
+    <a href='http://127.0.0.1:8000/menu/'>
         <button type="button">Меню</button>
     </a>
     <a href='http://127.0.0.1:8000/basket/'>
@@ -27,13 +26,13 @@
         <button type="button">Заказы</button>
     </a><br><br>
     {{ user }}
-    <br><br><a href='http://127.0.0.1:8000/login/'>
+    <br><br><a href='http://127.0.0.1:8000/token/'>
         <button type="button">Войти</button>
     </a>
     <a href='http://127.0.0.1:8000/register/'>
         <button type="button">Зарегистрироваться</button>
     </a>
-    <a href='http://127.0.0.1:8000/logout/'>
+    <a href='http://127.0.0.1:8000/token/'>
         <button type="button">Выйти</button>
     </a>
     {% endblock %}
@@ -42,6 +41,10 @@
 <main>
     {% block content %}
     <p>{{ content }}</p>
+    {% endblock %}
+
+    {% block crud_container %}
+
     {% endblock %}
 </main>
 

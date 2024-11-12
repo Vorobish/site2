@@ -1,20 +1,21 @@
-from fastapi import FastAPI, Request, Depends, HTTPException, status
+from datetime import datetime
+
+from fastapi import FastAPI, Request, Depends, HTTPException, status, Form
 from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 
-from typing import Annotated, Union
+from typing import Annotated
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
-from pydantic import BaseModel
 from sqlalchemy import select, insert, update, delete
 from sqlalchemy.orm import Session
 
-
 from app.backend.dp_depends import get_db
+from app.models import Menu
 from app.models.user import User
 from app.routers import user, menu, category
-from app.routers.user import fake_hash_password, users_dict
-from app.schemas import UserAuth
+from app.routers.user import fake_hash_password, create_user, all_users
+from app.schemas import UserAuth, CreateUser
 
 app = FastAPI()
 app.mount("/static", StaticFiles(directory="app/static"), name="static")
@@ -33,16 +34,27 @@ def get_user(db, username: str):
         return UserInDB(**user_dict)
 
 
-def fake_decode_token(token):
+def fake_decode_token(db: Annotated[Session, Depends(get_db)], token):
     # This doesn't provide any security at all
     # Check the next version
-    # user = get_user(fake_users_db, token)
+    users = db.scalars(select(User)).all()
+    users_dict = {}
+    for i in users:
+        users_dict.update({
+            i.username: {
+                "username": i.username,
+                "full_name": i.full_name,
+                "email": i.email,
+                "hashed_password": i.hashed_password,
+                "disabled": i.disabled,
+            }
+        })
     user = get_user(users_dict, token)
     return user
 
 
-async def get_current_user(token: Annotated[str, Depends(oauth2_scheme)]):
-    user = fake_decode_token(token)
+async def get_current_user(db: Annotated[Session, Depends(get_db)], token: Annotated[str, Depends(oauth2_scheme)]):
+    user = fake_decode_token(db, token)
     if not user:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
@@ -61,12 +73,23 @@ async def get_current_active_user(
 
 
 @app.post("/token")
-async def login(form_data: Annotated[OAuth2PasswordRequestForm, Depends()]):
+async def login(db: Annotated[Session, Depends(get_db)], form_data: Annotated[OAuth2PasswordRequestForm, Depends()]):
     # user_dict = fake_users_db.get(form_data.username)
-    for i in users_dict:
-        if i == form_data.username:
-            user_dict = users_dict[i]
-    if not user_dict:
+    users = db.scalars(select(User)).all()
+    users_dict = {}
+    for i in users:
+        users_dict.update({
+                i.username: {
+                    "username": i.username,
+                    "full_name": i.full_name,
+                    "email": i.email,
+                    "hashed_password": i.hashed_password,
+                    "disabled": i.disabled,
+                }
+            })
+    if form_data.username in users_dict.keys():
+        user_dict = users_dict[form_data.username]
+    else:
         raise HTTPException(status_code=400, detail="Incorrect username or password")
     user = UserInDB(**user_dict)
     hashed_password = fake_hash_password(form_data.password)
@@ -86,32 +109,54 @@ async def read_users_me(
 async def base(request: Request) -> HTMLResponse:
     title = 'Главная страница'
     content = 'Для выбора товаров перейдите в Меню'
-    user_base = read_users_me(Annotated[User, Depends(get_current_active_user)])
-    username = 'гость'
-    for i in users_dict:
-        if i == user_base:
-            username = user_base.username
     context = {
         'request': request,
         'title': title,
         'content': content,
-        'user': username,
+        # 'user': username,
     }
     return templates.TemplateResponse("base.html", context)
 
 
-# @app.get('/menu2')
-# async def menu2(request: Request) -> HTMLResponse:
-#     title = 'Меню'
-#     # menus = Menu.objects.all().order_by('id')
-#     context = {
-#         'request': request,
-#         'title': title,
-#         # 'page_obj': page_obj,
-#         # 'k': k,
-#         # 'basket_list': basket_list,
-#     }
-#     return templates.TemplateResponse("menu.html", context)
+@app.post('/register/', status_code=status.HTTP_201_CREATED)
+async def register(db: Annotated[Session, Depends(get_db)], request: Request, username_new: str
+                   , password_new: str, email: str = Form()) -> HTMLResponse:
+    user = db.scalars(select(User).where(User.username == username_new)).all()
+    if user:
+        messages = 'Данный логин уже существует'
+    else:
+        hashed_password = fake_hash_password(password_new)
+        db.execute(insert(User).values(username=username_new,
+                                       email=email,
+                                       hashed_password=hashed_password,
+                                       disabled=True,
+                                       time_create=datetime.now(),
+                                       time_update=datetime.now()))
+        db.commit()
+        messages = 'Успешная регистрация'
+    context = {
+        'request': request,
+        'messages': messages,
+        'username_new': username_new,
+        'title': 'Регистрация',
+    }
+    return templates.TemplateResponse("register.html", context)
+
+
+@app.get('/menu')
+async def menu_str(db: Annotated[Session, Depends(get_db)], request: Request) -> HTMLResponse:
+    title = 'Меню'
+    menus = db.scalars(select(Menu)).all()
+    context = {
+        'request': request,
+        'menus': menus,
+        'title': title,
+    }
+    return templates.TemplateResponse("menu.html", context)
+
+# @app.post('/login/', status_code=status.HTTP_201_CREATED)
+# async def auth_user(request: Request, db: Annotated[Session, Depends(get_db)], username: str, password: str = Form()) -> HTMLResponse:
+#     dict_token = login(db, form_data: Annotated[OAuth2PasswordRequestForm, Depends()]) # как это подменить?... form_data...
 
 
 app.include_router(user.router)
@@ -128,3 +173,9 @@ app.include_router(category.router)
 # alembic upgrade head  # загрузили в БД
 # alembic revision --autogenerate -m "Initial revision" # последующие миграции
 # alembic upgrade head  # загрузили в БД
+
+
+
+
+
+
