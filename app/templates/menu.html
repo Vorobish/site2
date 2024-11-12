@@ -9,7 +9,7 @@
 {% block content %}
 <div id="main">
     {% for menu in menus %}
-    <div>меню
+    <div>
         <h2>{{ menu.name_food }}</h2>
         <p>Вес: {{ menu.weight_gr }}, Цена: {{ menu.price }}</p>
         <img src="static/{{ menu.image }}" style="width: 250px; height: 250px;">
