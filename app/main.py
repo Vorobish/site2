@@ -6,29 +6,42 @@ from fastapi.templating import Jinja2Templates
 from typing import Annotated, Union
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from pydantic import BaseModel
+from sqlalchemy import select, insert, update, delete
+from sqlalchemy.orm import Session
 
-from routers import menu, category
+from app.backend import db
+from app.backend.dp_depends import get_db
+from app.models.user import User
+from app.routers import user, menu, category
+from app.schemas import UserAuth
 
-fake_users_db = {
-    "johndoe": {
-        "username": "johndoe",
-        "full_name": "John Doe",
-        "email": "johndoe@example.com",
-        "hashed_password": "fakehashedsecret",
-        "disabled": False,
-    },
-    "alice": {
-        "username": "alice",
-        "full_name": "Alice Wonderson",
-        "email": "alice@example.com",
-        "hashed_password": "fakehashedsecret2",
-        "disabled": True,
-    },
-}
+
+async def all_users(db: Annotated[Session, Depends(get_db)]):
+    users = db.scalars(select(User)).all()
+    return users
+
+fake_users_db = all_users
+
+# fake_users_db = {
+#     "johndoe": {
+#         "username": "johndoe",
+#         "full_name": "John Doe",
+#         "email": "johndoe@example.com",
+#         "hashed_password": "fakehashedsecret",
+#         "disabled": False,
+#     },
+#     "alice": {
+#         "username": "alice",
+#         "full_name": "Alice Wonderson",
+#         "email": "alice@example.com",
+#         "hashed_password": "fakehashedsecret2",
+#         "disabled": True,
+#     },
+# }
 
 app = FastAPI()
-app.mount("/static", StaticFiles(directory="static"), name="static")
-templates = Jinja2Templates(directory="templates")
+app.mount("/static", StaticFiles(directory="app/static"), name="static")
+templates = Jinja2Templates(directory="app/templates")
 
 
 def fake_hash_password(password: str):
@@ -38,14 +51,7 @@ def fake_hash_password(password: str):
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 
 
-class User(BaseModel):
-    username: str
-    email: Union[str, None] = None
-    full_name: Union[str, None] = None
-    disabled: Union[bool, None] = None
-
-
-class UserInDB(User):
+class UserInDB(UserAuth):
     hashed_password: str
 
 
@@ -74,7 +80,7 @@ async def get_current_user(token: Annotated[str, Depends(oauth2_scheme)]):
 
 
 async def get_current_active_user(
-        current_user: Annotated[User, Depends(get_current_user)],
+        current_user: Annotated[UserAuth, Depends(get_current_user)],
 ):
     if current_user.disabled:
         raise HTTPException(status_code=400, detail="Inactive user")
@@ -95,7 +101,7 @@ async def login(form_data: Annotated[OAuth2PasswordRequestForm, Depends()]):
 
 @app.get("/users/me")
 async def read_users_me(
-        current_user: Annotated[User, Depends(get_current_active_user)],
+        current_user: Annotated[UserAuth, Depends(get_current_active_user)],
 ):
     return current_user
 
@@ -112,24 +118,31 @@ async def base(request: Request) -> HTMLResponse:
     return templates.TemplateResponse("base.html", context)
 
 
-@app.get('/menu')
-async def menu(request: Request) -> HTMLResponse:
-    title = 'Меню'
-    # menus = Menu.objects.all().order_by('id')
-    context = {
-        'request': request,
-        'title': title,
-        # 'page_obj': page_obj,
-        # 'k': k,
-        # 'basket_list': basket_list,
-    }
-    return templates.TemplateResponse("menu.html", context)
+# @app.get('/menu')
+# async def menu(request: Request) -> HTMLResponse:
+#     title = 'Меню'
+#     # menus = Menu.objects.all().order_by('id')
+#     context = {
+#         'request': request,
+#         'title': title,
+#         # 'page_obj': page_obj,
+#         # 'k': k,
+#         # 'basket_list': basket_list,
+#     }
+#     return templates.TemplateResponse("menu.html", context)
 
 
-# app.include_router(menu.router)
-# app.include_router(category.router)
+app.include_router(user.router)
+app.include_router(menu.router)
+app.include_router(category.router)
 
-# python -m uvicorn main:app
+# python -m uvicorn app.main:app
 # pip3 install Jinja2 --upgrade
 # pip3 install fastapi-staticfiles
 # pip3 install python-multipart
+
+# alembic init app.migrations   # только один раз - это создание папки
+# alembic revision --autogenerate -m "Initial migration"    # создана первая миграция но ещё нет в БД
+# alembic upgrade head  # загрузили в БД
+# alembic revision --autogenerate -m "Initial revision" # последующие миграции
+# alembic upgrade head  # загрузили в БД

@@ -22,6 +22,7 @@ if config.config_file_name is not None:
 from app.backend.db import Base
 from app.models.category import Category
 from app.models.menu import Menu
+from app.models.user import User
 target_metadata = Base.metadata
 
 # other values from the config, defined by the needs of env.py,
