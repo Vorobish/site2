@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block pagename %}
+<h1>{{ title }}</h1>
+{% endblock %}
+
+{% block content %}
+{% if messages %}
+<h2> {{ messages }} </h2>
+{% endif %}
+{% for key, value in list_info.items() %}
+<ul>
+    <li>{{ value }}
+        <form method="post" style="display:inline" action="/basket_add/">
+            <input type="hidden" id="key" name="key" maxlength="10" value="{{ key }}" required>
+            <button type="submit" name="add">+</button>
+        </form>
+        <form method="post" style="display:inline" action="/basket_del/">
+            <input type="hidden" id="key2" name="key2" maxlength="10" value="{{ key }}" required>
+            <button type="submit" name="del">-</button>
+        </form>
+    </li>
+</ul>
+{% endfor %}
+Итого: {{ res | float }}
+<br><br>
+{% endblock %}
