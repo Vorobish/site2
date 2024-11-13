@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block pagename %}
+<h1>{{ title }}</h1>
+{% endblock %}
+
+{% block content %}
+<h2>Номер заказа: {{ order_id }}</h2>
+<p>Дата заказа: {{ time_create }}, Сумма: {{ summa | float }}, Способ доставки: {{ deli_info }}</p>
+<p>Телефон: {{ phone }}, Адрес: {{ address }}</p>
+<p>Статус выполнения: {{ stat_info }}, Статус оплаты: {{ pay_info }}</p>
+<p>Комментарий: {{ comment }}</p>
+<p>Состав заказа:</p>
+{% for det in list_detail %}
+<ul>
+    <li>{{ det }}</li>
+</ul>
+{% endfor %}
+{% endblock %}

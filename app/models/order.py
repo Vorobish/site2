@@ -7,7 +7,6 @@ from app.models import user
 
 
 class Order(Base):
-
     __tablename__ = "orders"
     __table_args__ = {'extend_existing': True}
     id = Column(Integer, primary_key=True, index=True)
@@ -27,6 +26,7 @@ class Order(Base):
 
 
 from sqlalchemy.schema import CreateTable
+
 print(CreateTable(Order.__table__))
 
 # Type_delivery = [
@@ -49,4 +49,3 @@ print(CreateTable(Order.__table__))
 #     (6, 'у курьера'),
 #     (7, 'исполнен'),
 # ]
-

@@ -27,13 +27,13 @@
 Итого: {{ res | float }}
 <br><br>
 {% if user_id == 0 %}
-    <h1>Для оформления заказа - авторизуйтесь:)</h1>
+<h1>Для оформления заказа - авторизуйтесь:)</h1>
 {% else %}
 <form method="post" action="/basket_order/">
     <div class="dropdown">
         <p>Выберите тип доставки</p>
-            <p><input type="radio" value="avto" checked name="deli"/>доставка (+200 руб)</p>
-            <p><input type="radio" value="self" name="deli"/>самовывоз</p>
+        <p><input type="radio" value="avto" checked name="deli"/>доставка (+200 руб)</p>
+        <p><input type="radio" value="self" name="deli"/>самовывоз</p>
 
         <label for="phone">Введите номер телефона (без 8 и тире):</label><br>
         <input type="text" id="phone" name="phone" maxlength="10" size="10" required><br><br>

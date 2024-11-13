@@ -27,6 +27,7 @@ user_id_current = 0
 username_current = 'гость'
 basket_list = {}
 
+
 # Авторизация в части Auth2
 
 
@@ -86,15 +87,15 @@ async def login(request: Request, db: Annotated[Session, Depends(get_db)]
     users_dict = {}
     for i in users:
         users_dict.update({
-                i.username: {
-                    "id": i.id,
-                    "username": i.username,
-                    "full_name": i.full_name,
-                    "email": i.email,
-                    "hashed_password": i.hashed_password,
-                    "disabled": i.disabled,
-                }
-            })
+            i.username: {
+                "id": i.id,
+                "username": i.username,
+                "full_name": i.full_name,
+                "email": i.email,
+                "hashed_password": i.hashed_password,
+                "disabled": i.disabled,
+            }
+        })
     if form_data.username in users_dict.keys():
         user_dict = users_dict[form_data.username]
         id = user_dict['id']
@@ -302,7 +303,8 @@ async def basket(db: Annotated[Session, Depends(get_db)], request: Request) -> H
         name = menu.name_food
         price = menu.price
         amount = basket_list[i]
-        list_info.update({i: f"{name}, количество = {amount}, сумма: {float(price)} руб. * {amount} = {float(price) * amount} руб."})
+        list_info.update(
+            {i: f"{name}, количество = {amount}, сумма: {float(price)} руб. * {amount} = {float(price) * amount} руб."})
         res += price * amount
     title = 'Корзина'
     context = {
@@ -333,7 +335,8 @@ async def basket_add(db: Annotated[Session, Depends(get_db)], request: Request, 
         name = menu.name_food
         price = menu.price
         amount = basket_list[i]
-        list_info.update({i: f"{name}, количество = {amount}, сумма: {float(price)} руб. * {amount} = {float(price) * amount} руб."})
+        list_info.update(
+            {i: f"{name}, количество = {amount}, сумма: {float(price)} руб. * {amount} = {float(price) * amount} руб."})
         res += price * amount
     title = 'Корзина'
     context = {
@@ -436,21 +439,96 @@ async def basket_order(db: Annotated[Session, Depends(get_db)], request: Request
     db.commit()
     return templates.TemplateResponse("basket.html", context)
 
+
+# Заказы
+
+@app.get('/orders')
+async def orders(db: Annotated[Session, Depends(get_db)], request: Request) -> HTMLResponse:
+    global user_id_current, username_current
+    orderss = db.scalars(select(Order).where(Order.user_id == user_id_current).order_by(Order.id.desc()))
+    title = 'Заказы'
+    context = {
+        'request': request,
+        'title': title,
+        'username_current': username_current,
+        'user_id': user_id_current,
+        'orderss': orderss,
+    }
+    return templates.TemplateResponse("orders.html", context)
+
+
+@app.get('/order/{order_id}/')
+async def order(db: Annotated[Session, Depends(get_db)], request: Request, order_id: int = int()) -> HTMLResponse:
+    global user_id_current, username_current
+    order = db.scalars(select(Order).where(Order.id == order_id)).first()
+    if user_id_current == order.user_id:
+        summa = order.summa
+        delivery = order.delivery
+        deli_info = ''
+        if delivery == 'avto':
+            deli_info = 'с доставкой (200 руб.)'
+        else:
+            deli_info = 'самовывоз'
+        pay_stat = order.pay_stat
+        pay_info = ''
+        if pay_stat == 'paid':
+            pay_info = 'заказ оплачен'
+        elif pay_stat == 'part':
+            pay_info = 'внесен аванс'
+        else:
+            pay_info = 'не оплачен'
+        status = order.status
+        stat_info = ''
+        if status == 1:
+            stat_info = 'создан'
+        elif status == 2:
+            stat_info = 'принят'
+        elif status == 3:
+            stat_info = 'отказан'
+        elif status == 4:
+            stat_info = 'в работе'
+        elif status == 5:
+            stat_info = 'готов'
+        elif status == 6:
+            stat_info = 'у курьера'
+        else:
+            stat_info = 'исполнен'
+        detail = db.scalars(select(OrderIn).where(OrderIn.id == order_id))
+        list_detail = []
+        for i in detail:
+            menu = db.scalars(select(Menu).where(Menu.id == i.menu_id)).first()
+            count = i.count
+            name = menu.name_food
+            price = menu.price
+            list_detail.append(
+                f"{name}, количество = {count}, сумма: {float(price)} руб. * {count} = {float(price) * count} руб.")
+        title = 'Детали заказа'
+        context = {
+            'request': request,
+            'username_current': username_current,
+            'user_id': user_id_current,
+            'title': title,
+            'order_id': order_id,
+            'summa': summa,
+            'deli_info': deli_info,
+            'phone': order.phone,
+            'address': order.address,
+            'pay_info': pay_info,
+            'stat_info': stat_info,
+            'comment': order.comment,
+            'time_create': order.time_create,
+            'list_detail': list_detail,
+        }
+        return templates.TemplateResponse("order.html", context)
+    else:
+        return HTMLResponse('Для просмотра заказа нужно авторизоваться!', status_code=400)
+
+
 app.include_router(user.router)
 app.include_router(menu.router)
 app.include_router(category.router)
 
 # python -m uvicorn app.main:app
 
-# alembic init app.migrations   # только один раз - это создание папки
-# alembic revision --autogenerate -m "Initial migration"    # создана первая миграция но ещё нет в БД
-# alembic upgrade head  # загрузили в БД
 # alembic revision --autogenerate -m "Initial revision" # последующие миграции
 # alembic upgrade head  # загрузили в БД
-
-
-
-
-
-
-

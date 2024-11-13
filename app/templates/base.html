@@ -6,7 +6,7 @@
     <link href="{{ url_for('static', path='/style3.css') }}" rel="stylesheet">
 </head>
 <body>
-    <header>
+<header>
     {% block pagename %}
     <h1>{{ title }}</h1>
     {% endblock %}
@@ -22,21 +22,24 @@
     <a href='http://127.0.0.1:8000/basket/'>
         <button type="button">Корзина</button>
     </a>
+    {% if user_id != 0 %}
     <a href='http://127.0.0.1:8000/orders/'>
         <button type="button">Заказы</button>
-    </a><br><br>
+    </a>
+    {% endif %}
+    <br><br>
     {{ username_current }}<br>
     {% if user_id == 0 %}
     <br><a href='http://127.0.0.1:8000/login/'>
-        <button type="button">Войти</button>
-    </a>
+    <button type="button">Войти</button>
+</a>
     <a href='http://127.0.0.1:8000/register/'>
         <button type="button">Зарегистрироваться</button>
     </a>
     {% else %}
     <br><a href='http://127.0.0.1:8000/logout/'>
-        <button type="button">Выйти</button>
-    </a>
+    <button type="button">Выйти</button>
+</a>
     {% endif %}
     {% endblock %}
 </nav>

@@ -1,6 +1,8 @@
 from app.backend.db import Base
 from sqlalchemy import Column, Integer, String, Boolean, ForeignKey, Numeric, DECIMAL, Text, DateTime
 from sqlalchemy.orm import relationship
+
+
 # from app.models import *
 
 
@@ -20,9 +22,5 @@ class User(Base):
 
 
 from sqlalchemy.schema import CreateTable
+
 print(CreateTable(User.__table__))
-
-
-
-
-

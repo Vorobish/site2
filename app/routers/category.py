@@ -20,10 +20,10 @@ async def all_category(db: Annotated[Session, Depends(get_db)]):
 async def create_category(db: Annotated[Session, Depends(get_db)], create_category: CreateCategory):
     category_exists = db.scalar(select(Category).where(Category.name_category == create_category.name_category))
     if category_exists:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail='Данная категория еды уже существует'
-            )
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail='Данная категория еды уже существует'
+        )
     db.execute(insert(Category).values(name_category=create_category.name_category,
                                        time_create=datetime.now(),
                                        time_update=datetime.now()))
@@ -32,7 +32,3 @@ async def create_category(db: Annotated[Session, Depends(get_db)], create_catego
         'status_code': status.HTTP_201_CREATED,
         'transaction': 'Категория создана'
     }
-
-
-
-

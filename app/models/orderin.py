@@ -22,4 +22,5 @@ class OrderIn(Base):
 
 
 from sqlalchemy.schema import CreateTable
+
 print(CreateTable(OrderIn.__table__))

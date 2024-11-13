@@ -16,9 +16,5 @@ class Category(Base):
 
 
 from sqlalchemy.schema import CreateTable
+
 print(CreateTable(Category.__table__))
-
-
-
-
-

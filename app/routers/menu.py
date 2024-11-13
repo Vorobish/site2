@@ -28,6 +28,3 @@ async def create_user(db: Annotated[Session, Depends(get_db)], create_menu: Crea
         'status_code': status.HTTP_201_CREATED,
         'transaction': 'Пункт меню создан'
     }
-
-
-

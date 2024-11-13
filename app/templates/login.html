@@ -10,21 +10,23 @@
 {% if messages %}
 <p> {{ messages }} </p>
 {% endif %}
-    <section class="container-fluid">
-        <form method="post" action="/token/">
-            <div class="cd-auto">
-                <div class="input-group mb-3">
-                    <br>
-                    <input type="text" name="username" value='{{ username }}' class="form-control" placeholder="Введите логин"
-                    aria-label="Введите логин" aria-describedby="button-addon2"/><br><br>
-                    <input type="text" name="password" value='{{ password }}' class="form-control" placeholder="Введите пароль"
-                    aria-label="Введите пароль" aria-describedby="button-addon2"/><br><br>
-                    <button class="btn btn-outline-primary" type="submit" id="button-addon2" data-mdb-ripple-color="dark">
-                        Авторизоваться
-                    </button>
-                </div>
+<section class="container-fluid">
+    <form method="post" action="/token/">
+        <div class="cd-auto">
+            <div class="input-group mb-3">
+                <br>
+                <input type="text" name="username" value='{{ username }}' class="form-control"
+                       placeholder="Введите логин"
+                       aria-label="Введите логин" aria-describedby="button-addon2"/><br><br>
+                <input type="text" name="password" value='{{ password }}' class="form-control"
+                       placeholder="Введите пароль"
+                       aria-label="Введите пароль" aria-describedby="button-addon2"/><br><br>
+                <button class="btn btn-outline-primary" type="submit" id="button-addon2" data-mdb-ripple-color="dark">
+                    Авторизоваться
+                </button>
             </div>
-        </form>
-    </section>
+        </div>
+    </form>
+</section>
 </body>
 {% endblock content %}

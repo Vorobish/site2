@@ -21,10 +21,5 @@ class Menu(Base):
 
 
 from sqlalchemy.schema import CreateTable
+
 print(CreateTable(Menu.__table__))
-
-
-
-
-
-

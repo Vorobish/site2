@@ -29,7 +29,6 @@ class CreateUser(BaseModel):
     password: str
     disabled: int
 
-
 # class CreateUserInDB(CreateUser):
 #     hashed_password: str
 

@@ -12,5 +12,6 @@ class Base(DeclarativeBase):
 
 # pip3 install alembic
 # alembic init migrations
-# alembic revision --autogenerate -m "Initial migration"
-# alembic upgrade head
+# alembic init app.migrations   # только один раз - это создание папки
+# alembic revision --autogenerate -m "Initial migration"    # создана первая миграция но ещё нет в БД
+# alembic upgrade head  # загрузили в БД
