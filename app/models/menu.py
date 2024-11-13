@@ -17,6 +17,7 @@ class Menu(Base):
     time_create = Column(DateTime)
     time_update = Column(DateTime)
     category = relationship("Category", back_populates="menus")
+    orderins = relationship("OrderIn", back_populates="menu")
 
 
 from sqlalchemy.schema import CreateTable

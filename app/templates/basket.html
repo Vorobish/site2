@@ -26,4 +26,27 @@
 {% endfor %}
 Итого: {{ res | float }}
 <br><br>
+{% if user_id == 0 %}
+    <h1>Для оформления заказа - авторизуйтесь:)</h1>
+{% else %}
+<form method="post" action="/basket_order/">
+    <div class="dropdown">
+        <p>Выберите тип доставки</p>
+            <p><input type="radio" value="avto" checked name="deli"/>доставка (+200 руб)</p>
+            <p><input type="radio" value="self" name="deli"/>самовывоз</p>
+
+        <label for="phone">Введите номер телефона (без 8 и тире):</label><br>
+        <input type="text" id="phone" name="phone" maxlength="10" size="10" required><br><br>
+
+        <label for="address">Введите адрес:</label><br>
+        <input type="text" id="address" name="address" maxlength="200" size="160" required><br><br>
+
+        <label for="comment">Комментарий к заказу:</label><br>
+        <input type="text" id="comment" name="comment" maxlength="500" size="160"><br><br>
+
+        <input type="hidden" id="user_id" name="user_id" maxlength="30" value="{{ user_id }}" required>
+        <button type="submit" name="order">Заказать</button>
+    </div>
+</form>
+{% endif %}
 {% endblock %}

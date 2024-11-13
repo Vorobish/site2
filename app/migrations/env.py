@@ -23,6 +23,8 @@ from app.backend.db import Base
 from app.models.category import Category
 from app.models.menu import Menu
 from app.models.user import User
+from app.models.order import Order
+from app.models.orderin import OrderIn
 target_metadata = Base.metadata
 
 # other values from the config, defined by the needs of env.py,

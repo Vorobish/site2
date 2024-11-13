@@ -5,13 +5,13 @@ from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 
-from typing import Annotated
+from typing import Annotated, Union
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from sqlalchemy import select, insert, update, delete
 from sqlalchemy.orm import Session
 
 from app.backend.dp_depends import get_db
-from app.models import Menu
+from app.models import Menu, Order, OrderIn
 from app.models.user import User
 from app.routers import user, menu, category
 from app.routers.user import fake_hash_password, create_user, all_users
@@ -25,7 +25,7 @@ oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 
 user_id_current = 0
 username_current = 'гость'
-basket_list = {1: 3, 2: 2}
+basket_list = {}
 
 # Авторизация в части Auth2
 
@@ -104,6 +104,8 @@ async def login(request: Request, db: Annotated[Session, Depends(get_db)]
             'request': request,
             'title': 'Авторизация',
             'messages': 'Некорректный логин или пароль',
+            'username_current': username_current,
+            'user_id': user_id_current,
         }
         return templates.TemplateResponse("login.html", context)
     user = UserInDB(**user_dict)
@@ -114,6 +116,8 @@ async def login(request: Request, db: Annotated[Session, Depends(get_db)]
             'request': request,
             'title': 'Авторизация',
             'messages': 'Некорректный логин или пароль',
+            'username_current': username_current,
+            'user_id': user_id_current,
         }
         return templates.TemplateResponse("login.html", context)
     user_id_current = id
@@ -377,39 +381,60 @@ async def basket_del(db: Annotated[Session, Depends(get_db)], request: Request, 
     return templates.TemplateResponse("basket.html", context)
 
 
-    #     if 'order' in request.POST:
-    #         if request.user.is_authenticated:
-    #             user_id = int(request.POST.get('user_id'))
-    #             deli = request.POST.get('deli') == 'on'
-    #             phone = request.POST.get('phone')
-    #             address = request.POST.get('address')
-    #             comment = request.POST.get('comment')
-    #             delivery = 'self'
-    #             if deli:
-    #                 res += 200
-    #                 delivery = 'avto'
-    #             Orders.objects.create(user_id=user_id,
-    #                                   summa=res,
-    #                                   delivery=delivery,
-    #                                   phone=phone,
-    #                                   address=address,
-    #                                   comment=comment)
-    #             number = int(Orders.objects.latest('id').id)
-    #             for i in basket_list:
-    #                 price = Menu.objects.filter(id=i).values_list('price', flat=True)[0]
-    #                 count = int(basket_list[i])
-    #                 summa = price * count
-    #                 OrderIn.objects.create(order_id=number,
-    #                                        menu_id=i,
-    #                                        count=count,
-    #                                        summa=summa)
-    #             basket_list.clear()
-    #             list_info.clear()
-    #             messages = f'Заказ создан, номер {number}'
-    #         else:
-    #             messages = 'Для оформления заказа нужно авторизоваться'
-
-
+@app.post('/basket_order')
+async def basket_order(db: Annotated[Session, Depends(get_db)], request: Request
+                       , deli: str = Form(), phone: str = Form(), address: str = Form()
+                       , comment: str = Form()) -> HTMLResponse:
+    global user_id_current, username_current, basket_list
+    list_info = {}
+    res = 0
+    messages = ''
+    for i in basket_list:
+        menu = db.scalars(select(Menu).where(Menu.id == i)).first()
+        name = menu.name_food
+        price = menu.price
+        amount = basket_list[i]
+        list_info.update({
+            i: f"{name}, количество = {amount}, сумма: {float(price)} руб. * {amount} = {float(price) * amount} руб."})
+        res += price * amount
+    if user_id_current:
+        delivery = 'self'
+        if deli == 'avto':
+            res += 200
+            delivery = 'avto'
+        db.execute(insert(Order).values(user_id=user_id_current,
+                                        summa=res,
+                                        delivery=delivery,
+                                        phone=phone,
+                                        address=address,
+                                        comment=comment))
+        number = db.scalars(select(Order).order_by(Order.id.desc())).first()
+        for i in basket_list:
+            menu = db.scalars(select(Menu).where(Menu.id == i)).first()
+            price = menu.price
+            count = basket_list[i]
+            summa = price * count
+            db.execute(insert(OrderIn).values(order_id=number.id,
+                                              menu_id=i,
+                                              count=count,
+                                              summa=summa))
+        basket_list.clear()
+        list_info.clear()
+        messages = f'Заказ создан, номер {number.id}'
+    else:
+        messages = 'Для оформления заказа нужно авторизоваться'
+    title = 'Корзина'
+    context = {
+        'request': request,
+        'title': title,
+        'list_info': list_info,
+        'res': res,
+        'messages': messages,
+        'username_current': username_current,
+        'user_id': user_id_current,
+    }
+    db.commit()
+    return templates.TemplateResponse("basket.html", context)
 
 app.include_router(user.router)
 app.include_router(menu.router)
@@ -424,24 +449,7 @@ app.include_router(category.router)
 # alembic upgrade head  # загрузили в БД
 
 
-# <!--<form method="post">-->
-# <!--    <div class="dropdown">-->
-# <!--        <label for="deli">-->
-# <!--            <input type="checkbox" id="deli" name="deli">доставка (200 руб)</label><br><br>-->
-#
-# <!--        <label for="phone">Введите номер телефона (без 8 и тире):</label><br>-->
-# <!--        <input type="text" id="phone" name="phone" maxlength="10" size="10" required><br><br>-->
-#
-# <!--        <label for="address">Введите адрес:</label><br>-->
-# <!--        <input type="text" id="address" name="address" maxlength="200" size="160" required><br><br>-->
-#
-# <!--        <label for="comment">Комментарий к заказу:</label><br>-->
-# <!--        <input type="text" id="comment" name="comment" maxlength="500" size="160"><br><br>-->
-#
-# <!--        <input type="hidden" id="user_id" name="user_id" maxlength="30" value="{{ user.id }}" required>-->
-# <!--        <button type="submit" name="order">Заказать</button>-->
-# <!--    </div>-->
-# <!--</form>-->
+
 
 
 

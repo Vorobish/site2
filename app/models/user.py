@@ -16,6 +16,8 @@ class User(Base):
     time_create = Column(DateTime)
     time_update = Column(DateTime)
 
+    orders = relationship("Order", back_populates="user")
+
 
 from sqlalchemy.schema import CreateTable
 print(CreateTable(User.__table__))
