@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <title>{% block title %}{{ title }}{% endblock %}</title>
-    <link href="{{ url_for('static', path='/style1.css') }}" rel="stylesheet">
+    <link href="{{ url_for('static', path='/style3.css') }}" rel="stylesheet">
 </head>
 <body>
     <header>
@@ -25,16 +25,19 @@
     <a href='http://127.0.0.1:8000/orders/'>
         <button type="button">Заказы</button>
     </a><br><br>
-    {{ user }}
-    <br><br><a href='http://127.0.0.1:8000/token/'>
+    {{ username_current }}<br>
+    {% if user_id == 0 %}
+    <br><a href='http://127.0.0.1:8000/login/'>
         <button type="button">Войти</button>
     </a>
     <a href='http://127.0.0.1:8000/register/'>
         <button type="button">Зарегистрироваться</button>
     </a>
-    <a href='http://127.0.0.1:8000/token/'>
+    {% else %}
+    <br><a href='http://127.0.0.1:8000/logout/'>
         <button type="button">Выйти</button>
     </a>
+    {% endif %}
     {% endblock %}
 </nav>
 

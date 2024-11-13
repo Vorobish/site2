@@ -8,26 +8,25 @@
 
 {% block content %}
 {% if messages %}
-    <p>{{ messages }}</p>
+<p> {{ messages }} </p>
 {% endif %}
-{% endblock %}
-
-{% block crud_container %}
     <section class="container-fluid">
-        <form method="post" action="/register/">
+        <form method="post" action="/register_post/">
             <div class="cd-auto">
                 <div class="input-group mb-3">
+                    <br>
                     <input type="text" name="username_new" value='{{ username_new }}' class="form-control" placeholder="Введите логин"
-                    aria-label="Введите логин" aria-describedby="button-addon2"/><br>
+                    aria-label="Введите логин" aria-describedby="button-addon2"/><br><br>
                     <input type="text" name="password_new" value='{{ password_new }}' class="form-control" placeholder="Введите пароль"
-                    aria-label="Введите пароль" aria-describedby="button-addon2"/><br>
+                    aria-label="Введите пароль" aria-describedby="button-addon2"/><br><br>
                     <input type="text" name="email_new" value='{{ email_new }}' class="form-control" placeholder="Введите email"
-                    aria-label="Введите email" aria-describedby="button-addon2"/><br>
+                    aria-label="Введите email" aria-describedby="button-addon2"/><br><br>
                     <button class="btn btn-outline-primary" type="submit" id="button-addon2" data-mdb-ripple-color="dark">
-                        Зарегистрироваться
+                        Добавить пользователя
                     </button>
                 </div>
             </div>
         </form>
     </section>
-{% endblock %}
+</body>
+{% endblock content %}

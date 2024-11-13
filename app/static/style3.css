@@ -54,3 +54,7 @@ ul {
         display: inline-block;
         float:left;
     }
+
+nav {
+        position: sticky;
+}

@@ -11,9 +11,22 @@
     {% for menu in menus %}
     <div>
         <h2>{{ menu.name_food }}</h2>
-        <p>Вес: {{ menu.weight_gr }}, Цена: {{ menu.price }}</p>
+        <p>Вес: {{ menu.weight_gr }}, Цена: {{ menu.price|float }}</p>
         <img src="static/{{ menu.image }}" style="width: 250px; height: 250px;">
         <p style="width: 250px">Состав: {{ menu.ingredients }}</p>
+        {% for key, value in basket_list.items() %}
+        {% if key == menu.id %}
+        <p>Добавлено в корзину {{ value }} шт</p>
+        {% endif %}
+        {% endfor %}
+        <form method="post" style="display:inline" action="/menu_add/">
+            <input type="hidden" id="key" name="key" maxlength="10" value="{{ menu.id }}" required>
+            <button type="submit" name="add">Добавить в корзину</button>
+        </form>
+        <form method="post" style="display:inline" action="/menu_del/">
+            <input type="hidden" id="key2" name="key2" maxlength="10" value="{{ menu.id }}" required>
+            <button type="submit" name="del">-1</button>
+        </form>
     </div>
     {% endfor %}
 </div>
