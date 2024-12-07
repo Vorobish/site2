@@ -7,6 +7,9 @@ from app.models import user
 
 
 class Order(Base):
+    '''
+        Заказ
+    '''
     __tablename__ = "orders"
     __table_args__ = {'extend_existing': True}
     id = Column(Integer, primary_key=True, index=True)

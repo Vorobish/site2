@@ -27,8 +27,9 @@ user_id_current = 0
 username_current = 'гость'
 basket_list = {}
 
-
-# Авторизация в части Auth2
+'''
+    Блок Авторизация (Auth2)
+'''
 
 
 class UserInDB(UserAuth):
@@ -142,7 +143,10 @@ async def read_users_me(
     return current_user
 
 
-# Главная страница
+'''
+    Блок Главная страница
+'''
+
 
 @app.get('/base')
 async def base(request: Request) -> HTMLResponse:
@@ -159,7 +163,10 @@ async def base(request: Request) -> HTMLResponse:
     return templates.TemplateResponse("base.html", context)
 
 
-# Регистрация
+'''
+    Блок Регистрация
+'''
+
 
 @app.get("/register/")
 async def register(request: Request):
@@ -201,7 +208,10 @@ async def register_post(request: Request, db: Annotated[Session, Depends(get_db)
     return templates.TemplateResponse("register.html", context)
 
 
-# Авторизация
+'''
+    Блок Авторизация (страница)
+'''
+
 
 @app.get("/login/")
 async def login_input(request: Request):
@@ -229,7 +239,10 @@ async def logout_input(request: Request):
     return templates.TemplateResponse("login.html", context)
 
 
-# Меню
+'''
+    Блок Меню
+'''
+
 
 @app.get('/menu')
 async def menu_str(db: Annotated[Session, Depends(get_db)], request: Request) -> HTMLResponse:
@@ -290,7 +303,10 @@ async def menu_del(db: Annotated[Session, Depends(get_db)], request: Request, ke
     return templates.TemplateResponse("menu.html", context)
 
 
-# Корзина
+'''
+    Блок Корзина
+'''
+
 
 @app.get('/basket')
 async def basket(db: Annotated[Session, Depends(get_db)], request: Request) -> HTMLResponse:
@@ -440,7 +456,10 @@ async def basket_order(db: Annotated[Session, Depends(get_db)], request: Request
     return templates.TemplateResponse("basket.html", context)
 
 
-# Заказы
+'''
+    Блок Заказы
+'''
+
 
 @app.get('/orders')
 async def orders(db: Annotated[Session, Depends(get_db)], request: Request) -> HTMLResponse:

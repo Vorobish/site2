@@ -10,6 +10,10 @@ from sqlalchemy import Column, Integer, String, Boolean, ForeignKey, Numeric, DE
 
 router = APIRouter(prefix="/user", tags=["user"])
 
+'''
+    Функции для класса Пользователь (для Swagger)
+'''
+
 
 @router.get("/")
 async def all_users(db: Annotated[Session, Depends(get_db)]):

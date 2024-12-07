@@ -9,6 +9,10 @@ from app.schemas import CreateCategory
 
 router = APIRouter(prefix="/category", tags=["category"])
 
+'''
+    Функции для класса Категории (для Swagger)
+'''
+
 
 @router.get("/")
 async def all_category(db: Annotated[Session, Depends(get_db)]):

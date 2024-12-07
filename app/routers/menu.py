@@ -12,6 +12,10 @@ from app.schemas import CreateMenu
 
 router = APIRouter(prefix="/menu", tags=["menu"])
 
+'''
+    Функции для класса Меню (для Swagger)
+'''
+
 
 @router.post("/create")
 async def create_user(db: Annotated[Session, Depends(get_db)], create_menu: CreateMenu):
